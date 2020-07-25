@@ -10,7 +10,7 @@
     ?El resultado de un programa real deberá ser el pipeline que alimenta al análisis sintáctico
     @author Benedetto
     @date 2020/07/08
-    @version 0.1
+    @version 1.0
 """
 from tabulate import tabulate
 import sys, re
