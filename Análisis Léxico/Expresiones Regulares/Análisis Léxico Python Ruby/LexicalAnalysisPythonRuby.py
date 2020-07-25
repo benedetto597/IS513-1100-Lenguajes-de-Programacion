@@ -144,7 +144,8 @@ class TokenParserPythonRuby:
             if len(token) > 0:
                 #Símbolos
                 generalToken = self.checkToken(token, self.generals)
-
+                
+                #Comentario de una línea
                 if(re.match(r"^\#.[a-zA-Z][a-zA-Z0-9\_\-]*$",token)):
                     remembered = ""
                     result += [["Se reconoce un comentario de una línea: " ,"%s"% token[0]]]
@@ -158,14 +159,16 @@ class TokenParserPythonRuby:
                         comment = comment + " " + token
                     else:
                         remembered = ""
-                        result += [["Se reconoce un comentario: " ,"%s"% token]]
+                        #Omitir comentario
+                        #result += [["Se reconoce un comentario: " ,"%s"% token]]
                         comment = ""
 
                 #Comentario de multiples líneas
                 elif(re.match(r"^\"\"\"$",remembered) or re.match(r"^/comment$",remembered)):
                     if(re.match(r"^\"\"\"$",token) or re.match(r"^uncomment/$",token)):
                         remembered = ""
-                        result += [["Se reconoce un comentario : " ,"%s"%comment]]
+                        #Omitir comentario
+                        #result += [["Se reconoce un comentario : " ,"%s"%comment]]
                         result += [["Se reconoce fin de comentario: " ,"%s"%token]]
                         comment = ""
                     else:
