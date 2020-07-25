@@ -120,7 +120,6 @@ class InformalTokenParser:
         f = open(self.fileName, "r")
 
         for line in f:
-            #print("\t\tDebug: %s" % line)
             errorLine += 1
             
             if re.match(r"^.*%s.*$" % self.prevent(token), line):
@@ -133,7 +132,7 @@ class InformalTokenParser:
     def prevent(self, token):
 
         if re.match(r"[\+\*\.\(\)\{\}\[\]]+",token):
-            return "\\%s" % token
+            return "\\\\%s" % token
         return token
 
 parser = (InformalTokenParser()).read().preprocess()
@@ -145,5 +144,3 @@ print ("\t%s\n" % parser.text)
 lexicalAnalysis = parser.lexicalAnalysis()
 print("El análisis léxico del software es:")
 print(tabulate(lexicalAnalysis))
-a = '"'
-print(a)

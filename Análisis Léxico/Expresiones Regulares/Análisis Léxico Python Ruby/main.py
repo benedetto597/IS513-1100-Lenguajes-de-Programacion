@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 from LexicalAnalysisPythonRuby import TokenParserPythonRuby
+from tabulate import tabulate
 parser = (TokenParserPythonRuby()).read().preprocess()
 parser.help()
 

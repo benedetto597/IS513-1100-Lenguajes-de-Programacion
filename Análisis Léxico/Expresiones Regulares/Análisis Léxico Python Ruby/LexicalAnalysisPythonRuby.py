@@ -18,40 +18,6 @@ import sys, re
 class TokenParserPythonRuby:
 
     def __init__(self): 
-        self.generals = [
-            ["+","Operador de suma"],
-            ["-","Operador de resta"],
-            ["*","Operador de multiplicación"],
-            ["/","Operador de división"],
-            ["%","Operador módulo o parseo"],
-            ["%s","Operador de parseo"],
-            ["%d","Operador de parseo"],
-            ["=","Operador de asignación"],
-            [",","Separador de instrucción"],
-            [":","Asignador de función"],
-            ["not","Booleano de negación"],
-            ["and","Booleano de conjunción"],
-            ["or","Booleano de disyunción"],
-            ["True","Literal booleano"],
-            ["False","Literal booleano"],
-            ["def","Declaración de función"],
-            ["class","Declaración de clase"],
-            ["if","Bucle si"],
-            ["else","Bucle si-no"],
-            ["elif","Bucle si-no si"],
-            ["#","Comentario"],
-            ['"',"Comilla Doble"],
-            ["'","Comilla Simple"],
-            ["return","Retorno de función"],
-            ["(","Inicio de agrupación"],
-            ["[","Inicio de agrupación"],
-            [")","Fin de Agrupación"],
-            ["]","Fin de Agrupación"],
-            [">","Operador de comparación mayor que"],
-            ["<","Operador de comparación menor que"],
-        ]
-
-        
         self.python = [
             ["print","Impresión a consola"],
             ['"""',"Comentario de multiples líneas"],
@@ -65,6 +31,37 @@ class TokenParserPythonRuby:
             ["end","Fin de instrucción"],
         ]
 
+        self.generals = [
+            ["+","Operador de suma"],
+            ["-","Operador de resta"],
+            ["*","Operador de multiplicación"],
+            ["/","Operador de división"],
+            ["%","Operador módulo o parseo"],
+            ["=","Operador de asignación"],
+            [",","Separador de instrucción"],
+            [":","Asignador de función"],
+            ["not","Booleano de negación"],
+            ["and","Booleano de conjunción"],
+            ["or","Booleano de disyunción"],
+            ["True","Literal booleano"],
+            ["False","Literal booleano"],
+            ["def","Declaración de función"],
+            ["class","Declaración de clase"],
+            ["if","Bucle si"],
+            ["else","Bucle si-no"],
+            ["elif","Bucle si-no si"],
+            ["#","Comentario de una línea"],
+            ['"',"Comilla Doble"],
+            ["'","Comilla Simple"],
+            ["return","Retorno de función"],
+            ["(","Inicio de agrupación"],
+            ["[","Inicio de agrupación"],
+            [")","Fin de Agrupación"],
+            ["]","Fin de Agrupación"],
+            [">","Operador de comparación mayor que"],
+            ["<","Operador de comparación menor que"],
+        ]
+
     def help(self):
 
         print("")
@@ -73,7 +70,8 @@ class TokenParserPythonRuby:
         print("\tToken Reader Python & Ruby")
         print("""
         \tPermite el reconocimiento de distintos tokens usando expresiones 
-        \tregulares para un lenguajes de múltiples instrucciones por línea de código. 
+        \tregulares para un lenguajes de múltiples instrucciones por línea 
+        \tde código. 
         """)
         print("*"*80)
         print("*"*80)
@@ -98,8 +96,35 @@ class TokenParserPythonRuby:
     def preprocess(self):
 
         text = self.text
-        for general in generals:
-            text = re.sub(r"%s" % general[0]," %s " % general[0], text)
+        
+        text = re.sub(r"\+"," + ", text)
+        text = re.sub(r"\-"," - ", text)
+        text = re.sub(r"\*"," * ", text)
+        text = re.sub(r"/(?!comment) | (?!uncomment)/"," / ", text)
+        text = re.sub(r"\%"," % ", text)
+        text = re.sub(r"\#@"," # @ ", text)
+        text = re.sub(r"\="," = ", text)
+        text = re.sub(r"\,"," , ", text)
+        text = re.sub(r"\:"," : ", text)
+        text = re.sub(r"\not$"," not ", text)
+        text = re.sub(r"\and$"," and ", text)
+        text = re.sub(r"\or$"," or ", text)
+        text = re.sub(r"\True"," True ", text)
+        text = re.sub(r"\False"," False ", text)
+        text = re.sub(r"\def"," def ", text)
+        text = re.sub(r"\class"," class ", text)
+        text = re.sub(r"\if"," if ", text)
+        text = re.sub(r"\elif"," elif ", text)
+        text = re.sub(r"\else"," else ", text)
+        text = re.sub(r"\return"," return ", text)
+        text = re.sub(r"\'.[a-zA-Z][a-zA-Z0-9\_\-]*"," ' ", text)
+        text = re.sub(r'\".[a-zA-Z][a-zA-Z0-9\_\-]*',' " ' , text)
+        text = re.sub(r"\("," ( ", text)
+        text = re.sub(r"\)"," ) ", text)
+        text = re.sub(r"\["," [ ", text)
+        text = re.sub(r"\]"," ] ", text)
+        text = re.sub(r"\<"," < ", text)
+        text = re.sub(r"\>"," > ", text)
         text = re.sub(r"\s+"," ", text)
         self.text = ("%s".strip() % text).strip()
 
@@ -108,7 +133,8 @@ class TokenParserPythonRuby:
     def lexicalAnalysis(self):
         result = []
         text = self.text
-        remembered, stringDouble, stringSimple = "","",""
+        remembered, stringDouble, stringSimple, comment = "","","",""
+        tokenLine = 0
 
         tokens = re.split(r"\s",text)
 
@@ -116,27 +142,86 @@ class TokenParserPythonRuby:
 
             token = ("%s".strip() % token).strip()
             if len(token) > 0:
-                if(re.match(r"^\'$",remembered) or re.match(r"^\"\"$",remembered)):
-                    if(re.match(r"^\"\"$",remembered)):
-                        if(re.match(r"^\"\"$",token)):
+                #Símbolos
+                generalToken = self.checkToken(token, self.generals)
+
+                if(re.match(r"^\#.[a-zA-Z][a-zA-Z0-9\_\-]*$",token)):
+                    remembered = ""
+                    result += [["Se reconoce un comentario de una línea: " ,"%s"% token[0]]]
+                    comment = token
+
+                elif(re.match(r"^\#.[a-zA-Z][a-zA-Z0-9\_\-]*$",remembered)):
+                    rememberLine = self.searchTokenLine(remembered)
+                    tokenLine = self.searchTokenLine(token)
+                    
+                    if(rememberLine == tokenLine):
+                        comment = comment + " " + token
+                    else:
+                        remembered = ""
+                        result += [["Se reconoce un comentario: " ,"%s"% token]]
+                        comment = ""
+
+                #Comentario de multiples líneas
+                elif(re.match(r"^\"\"\"$",remembered) or re.match(r"^/comment$",remembered)):
+                    if(re.match(r"^\"\"\"$",token) or re.match(r"^uncomment/$",token)):
+                        remembered = ""
+                        result += [["Se reconoce un comentario : " ,"%s"%comment]]
+                        result += [["Se reconoce fin de comentario: " ,"%s"%token]]
+                        comment = ""
+                    else:
+                        comment = comment + " " +  token
+                
+
+                #Cadena
+                elif(re.match(r"^\'$",remembered) or re.match(r"^\"$",remembered)):
+                    if(re.match(r"^\"$",remembered)):
+                        if(re.match(r"^\"$",token)):
                             remembered = ""
                             result += [["Se reconoce una cadena : " ,"%s"%stringDouble]]
+                            result += [["Se reconoce una comilla doble : " ,"%s"%token]]
                         else:
-                            stringDouble += token
+                            stringDouble = stringDouble + " " + token
 
                     if(re.match(r"^\'$",remembered)):
                         if(re.match(r"^\'$",token)):
                             remembered = '"'
                             result += [["Se reconoce una cadena : " ,"%s"%stringSimple]]
+                            result += [["Se reconoce una comilla simple : " ,"%s"%token]]
                         else:
-                            stringSimple += token
+                            stringSimple = striingSimple + " " + token
+                
+                #Es un token exclusivo de python
+                elif (re.match(r"^;$",token) or re.match(r"^\"\"\"$",token) or re.match(r"^print$",token)):
+                    if(re.match("^.*.py$",self.fileName)):
+                        tokenPython = self.checkToken(token, self.python)
+                        remembered = token
+                        result += [["Se reconoce %s " % tokenPython[1],"%s"%token]]
+                    else:
+                        quit(
+                        "Error: \n\tSe ha encontrado un token desconocido para el lenguaje de Ruby en la línea '%d': '%s'\n\n" %(
+                            self.searchTokenLine(token),
+                            token
+                        )
+                    )
 
-    
-                generalToken = checkToken(token, self.generals)
-                if(len(generalToken) > 0):
+                #Es un token exclusivo de ruby
+                elif (re.match(r"^uncomment/$",token) or re.match(r"^/comment$",token) or re.match(r"^puts$",token) or re.match(r"^end$",token)):
+                    if(re.match("^.*.rb$",self.fileName)):
+                        tokenRuby = self.checkToken(token, self.ruby)
+                        remembered = token
+                        result += [["Se reconoce %s " % tokenRuby[1],"%s"%token]]
+                    else:
+                        quit(
+                        "Error: \n\tSe ha encontrado un token desconocido para el lenguaje de Python en la línea '%d': '%s'\n\n" %(
+                            self.searchTokenLine(token),
+                            token
+                        )
+                    )
+
+                elif(len(generalToken) > 0):
                     remembered = token
                     result += [["Se reconoce %s: " % generalToken[1],"%s"%token]]
-
+                
                 #Es un identificador de usuario
                 elif re.match(r"^[a-zA-Z][a-zA-Z0-9\_\-]*$",token):
                     remembered = token
@@ -156,33 +241,6 @@ class TokenParserPythonRuby:
                     remembered = token
                     result += [["Se reconoce el número entero: ","%s"%token]]
                 
-                #Es un token exclusivo de python
-                elif (re.match(r"^;$",token) or re.match(r"^\"\"\"$",token) or re.match(r"^print$",token)):
-                    if(re.match("^.*.py$",self.fileName)):
-                        tokenPython = checkToken(token, self.python)
-                        remembered = token
-                        result += [["Se reconoce %s " % tokenPython[1],"%s"%token]]
-                    else:
-                        quit(
-                        "Error: \n\tSe ha encontrado un token desconocido para el lenguaje de Ruby en la línea '%d': '%s'\n\n" %(
-                            self.searchTokenLine(token),
-                            token
-                        )
-                    )
-
-                #Es un token exclusivo de ruby
-                elif (re.match(r"^uncomment/$",token) or re.match(r"^/comment$",token) or re.match(r"^puts$",token) or re.match(r"^end$",token)):
-                    if(re.match("^.*.rb$",self.fileName)):
-                        tokenRuby = checkToken(token, self.ruby)
-                        remembered = token
-                        result += [["Se reconoce %s " % tokenRuby[1],"%s"%token]]
-                    else:
-                        quit(
-                        "Error: \n\tSe ha encontrado un token desconocido para el lenguaje de Python en la línea '%d': '%s'\n\n" %(
-                            self.searchTokenLine(token),
-                            token
-                        )
-                    )
                 #Es un token desconcido
                 else:
                     quit(

@@ -1,0 +1,13 @@
+entero
+=
+1
+;
+flotante
+=
+1.0
+;
+assigment_conEntero
+=
+enteroassigment_conFlotante
+=
+flotante
