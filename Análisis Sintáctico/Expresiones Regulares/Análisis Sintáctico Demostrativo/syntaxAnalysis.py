@@ -26,7 +26,7 @@ class SyntaxAnalysis:
         print("")
         print("*"*80)
         print("*"*80) 
-        print("\tSintax Analysis (AnalizadorSintáctico Demostrativo)")
+        print("\tSintax Analysis (Analizador Sintáctico Demostrativo)")
         print("""
         \tPermite el reconocimiento de distintos tokens en el orden
         \tcorrecto de instrucciones
