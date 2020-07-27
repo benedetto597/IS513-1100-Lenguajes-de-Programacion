@@ -1,0 +1,9 @@
+{
+    Comentario en el lenguaje
+}
+
+"Esto es una cadena" =
+
+"1" + "2"
+
+"Esto es otra 'cadena'"'Cadena'

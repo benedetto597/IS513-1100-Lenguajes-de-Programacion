@@ -1,0 +1,8 @@
+
+welcome = "Bienvenido";
+resultText = "El resultado de la suma es: ";
+a = 1.1;
+suma = a + a + 2;
+
+print welcome;
+print (resultText)
