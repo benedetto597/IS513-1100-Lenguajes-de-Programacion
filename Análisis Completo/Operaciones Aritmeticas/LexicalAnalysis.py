@@ -66,6 +66,11 @@ class InformalTokenParser:
         text = self.text
         text = re.sub(r"="," = ", text)
         text = re.sub(r";"," ; ", text)
+        text = re.sub(r"\*"," * ", text)
+        text = re.sub(r"\+"," + ", text)
+        text = re.sub(r"\-"," - ", text)
+        text = re.sub(r"\/"," / ", text)
+        text = re.sub(r"\^"," ^ ", text)
         text = re.sub(r"\s+"," ", text)
         self.text = ("%s".strip() % text).strip()
 
@@ -101,6 +106,18 @@ class InformalTokenParser:
                 #Es un fin de instrucción
                 elif re.match(r"^;$",token):
                     result += [["Se reconoce el fin de instrucción: ","%s"%token]]
+
+                #Operaciones Aritmeticas
+                elif re.match(r"^\*$",token):
+                    result += [["Se reconoce la operación de multiplicación: ","%s"%token]]
+                elif re.match(r"^\/$",token):
+                    result += [["Se reconoce la operación de división: ","%s"%token]]
+                elif re.match(r"^\+$",token):
+                    result += [["Se reconoce la operación de suma: ","%s"%token]]
+                elif re.match(r"^\-$",token):
+                    result += [["Se reconoce la operación de resta: ","%s"%token]]
+                elif re.match(r"^\^$",token):
+                    result += [["Se reconoce la operación de elevación: ","%s"%token]]
 
                 #Es un token desconcido
                 else:
