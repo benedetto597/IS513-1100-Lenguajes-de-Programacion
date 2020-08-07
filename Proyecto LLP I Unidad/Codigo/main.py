@@ -22,7 +22,7 @@ if (whatLanguage == 1):
     sample = automata.text  
     
     if (optionTable == 1):
-       print(tabulate(automata.tokens, ["Token","Lexem"], tablefmt="fancy_grid", colalign=("center","center",)))
+       print(tabulate(automata.tokens, ["Lexem","Token"], tablefmt="fancy_grid", colalign=("center","center",)))
     else:
         pass
         #print("Nos salio Profe....")
