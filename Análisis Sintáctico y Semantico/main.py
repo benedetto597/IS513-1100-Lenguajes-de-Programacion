@@ -7,10 +7,11 @@ from lark import Lark, Transformer
 from Grammar import *
 
 reader = (Reader()).read()
-parser = Lark(grammar.parser="lalr", transformer = Semantic())
+parser = Lark(grammar,parser="lalr", transformer = Semantic())
 lenguaje = parser.parser
 
 sample = reader.text
+
 try: 
     lenguaje(sample)
 except Exception as e:
