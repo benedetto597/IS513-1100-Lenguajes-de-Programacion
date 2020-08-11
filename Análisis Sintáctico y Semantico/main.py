@@ -8,7 +8,7 @@ from Grammar import *
 
 reader = (Reader()).read()
 parser = Lark(grammar.parser="lalr", transformer = Semantic())
-lenguaje = pareser.parser
+lenguaje = parser.parser
 
 sample = reader.text
 try: 
