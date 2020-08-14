@@ -10,9 +10,8 @@ grammarJS = """
 
         ?argument: expre 
             | sentence  
-
-        //["if",[n,<,1,1]]<<   if(a[0] a[1] a[2])
-        ?expre: "function" var "(" parameter? ")" arg -> assignfunc
+            
+        ?expre: "function" var "(" parameter? ")" arg -> assignfunc        
             | arg        
             | var "=" "(" arithmeticoperation ")" ";" -> assignvar
             | var "=" arithmeticoperation ";" -> assignvar
@@ -27,8 +26,10 @@ grammarJS = """
             | /return?/ var "(" arithmeticoperation ")" ";" -> assignfunction 
             | arithmeticoperation "(" arithmeticoperation ")" ";" -> assignrecursion
             | endfunction ";"
-        ?fun: var "(" arithmeticoperation ")" -> assignfunction
+        ?fun: var "(" paremeter? ")" -> assignfunction
+        
         ?arg: "{" argument+ "}" -> getvalue
+
         //Definir sentencia
         ?sentence: "if" "(" boolean ")" -> assignif
             | "if" "(" (comparisonoperation | logicoperation) ")" "{" argument "}" ("else" "{" argument "}")? -> assignifelse
@@ -82,7 +83,7 @@ grammarJS = """
         ?comparisonoperator: /(==)|(!=)/
         //Definicion de booleano
         ?boolean: "true" ->gettrue
-            | "false"
+            | "false" ->getfalse
 
         //deficion de una cadena
         ?parameter: arithmeticoperationatom 
@@ -102,7 +103,6 @@ grammarJS = """
             | string "+" concatenate   
            
         //ignore
-        
         %ignore /\s+/
 
 """ 
@@ -198,57 +198,36 @@ grammarRb = """
             | concatenate "+" string -> con
             | concatenate "+" arithhmeticoperationatom -> con
             | arithhmeticoperationatom "+" concatenate -> con
-    
+        
+        //ignore
+        %ignore /\s+/
+        %ignore /#.*/
+        %ignore //
+        
 """
 
 
-grammarSh =  """
+grammarSh = """
+?start: exp+
+
+"""
+
+grammar = """
+    //todo minusculas
     //Axioma inicial
     ?start: exp+
     //definicion de una expresion
-    ?exp: var "=" aritmeticoperationatom 
-        | var "=" "$" aritmeticoperationatom
-        | var "=" string
-        | "echo" "\"" var "\""
-        | "echo"  var 
-        | "echo" "\"" combinate "\""
-        | "echo" "\"" string* "\""
-        | "echo" string* 
-        | "echo" "\"" arithmeticoperation* "\""
- 
-    ?if: "if" "[[" condition "]]" ";"? "then" content "else" content "fi"
-        | "if" "[[" condition "]]" ";"' "then" content "fi"
-        | "if" "[[" condition "]]" ";"? "then" content "else" content "fi"
-        | "if" "[[" condition "]]" ";"? "then" content elif "else" content "fi"
-    
-    ?logicoperation: arithmeticoperationatom "" arithmeticoperationatom
-        //lesserequal
-        | arithmeticoperationatom "-le" arithmeticoperationatom 
-        //Greater
-        | arithmeticoperationatom "-gt" arithmeticoperationatom 
-        //Lesser
-        | arithmeticoperationatom "-lt" arithmeticoperationatom 
-          
-        //Definir comparación 
-    ?comparisonoperation: arithmeticoperationatom "-eq" arithmeticoperation 
-        | arithmeticoperation "-eq" arithmeticoperationatom
-        | arithmeticoperation "-ne" arithmeticoperationatom 
-        | arithmeticoperationatom "-ne" arithmeticoperation 
-
-    ?elif: "elif" content  
-        | elif "elif" content 
-    
-    ?condition: conditionnum
-        | conditionstr
-
-    ?conditionnum:  aritmeticoperation
-
-    ?conditionstr: string
-
-    ?content: exp+
-
-    ?combinate: string* var*
-        | var* string
+    ?exp: var "=" "(" string ")" ";" -> assignvar
+        | "print" "(" concatenar ")" ";" -> printvar
+        | "print"  concatenar  ";" -> printvar
+        | "print" "(" var ")" ";" -> printvar
+        | "print"  var  ";" -> printvar
+        | var "=" "("  concatenar ")" ";" -> assignvar
+        | var "="  concatenar  ";" -> assignvar
+        | var "=" "(" aritmeticoperation ")" ";" -> assignvar
+        | var "=" aritmeticoperation ";" -> assignvar
+        | if -> funcionif
+    ?if: "if" "(" boolean ")" "{" exp2 "}"
 
     ?boolean: "true" 
         |"false"
@@ -256,18 +235,12 @@ grammarSh =  """
     ?exp2: if
         | "."
     //definicion de una variable
-    ?var:  /[a-zA-Z]\w*/
-        | "$" var
- 
+    ?var: /[a-zA-Z]\w*/   
     //Definicion de una cadena
     ?string: /"[^"]*"/
         |  /̈́'[^']*'/
-        | /[a-zA-Z][\w]+/
-        | string " " string  
-
     //Definicion de un numero
     ?number: /\d+(\.\d+)?/
-    s
     //Definicion de operacion aritmetica
     ?aritmeticoperation: product
         //| cadenaoperation "$" cadenaoperationatom -> con
@@ -275,19 +248,16 @@ grammarSh =  """
         | aritmeticoperation "-" product -> sub
     //definicion de un atomo de operacion aritmetica
     ?product: atom
-        | product "*" atom
-        | product "/" atom   
+        | product "*" atom -> mul
+        | product "/" atom -> div  
     ?atom: var -> getvar
         | number
         | "-" atom
-        | "((" aritmeticoperation "))"
+        | "(" aritmeticoperation ")"
     ?concatenar: string 
         | concatenar "+" string -> con
         | concatenar "+" atom -> con
         | atom "+" concatenar -> con
     //Ignorar espacios,saltos de linea y tabulados
     %ignore /\s+/
-    //Ignorar comentarios
-    %ignore /\#\.*
 """
-       
