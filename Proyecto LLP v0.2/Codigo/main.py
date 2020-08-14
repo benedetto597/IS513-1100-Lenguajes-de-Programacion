@@ -8,12 +8,13 @@ from Core.SemanticTwo import *
 
 reader = (Reader()).read() 
 
-parser = Lark(grammarFun ,parser="lalr",transformer = Semantic())
+parser = Lark(grammarBash ,parser="lalr")
 language = parser.parse
 sample = reader.text
 
 try:
     language(sample)
+    print("It works")
 
 except Exception as e:
     quit("\x1b[;31m"+"\nError sintactico: \n %s"%e) 
