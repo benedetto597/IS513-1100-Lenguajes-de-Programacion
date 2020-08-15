@@ -1,10 +1,5 @@
 #!/bin/bash
- 
-echo Enter Number
- 
-#read number from terminal
-read num
- 
+
 #initialize factorial
 factorial=1
  
@@ -14,4 +9,4 @@ do
     factorial=$(($factorial*$i))
 done
  
-echo Factorial of $num is $factorial
+echo "Factorial of $num is $factorial"
