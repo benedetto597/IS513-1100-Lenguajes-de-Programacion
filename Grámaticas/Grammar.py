@@ -7,7 +7,6 @@ grammarBash =  """
         | var "=" arithmeticoperation ";"?
         | "if" "[" condition "]" ";"? "then" exp "else" exp "fi"
         | "if" "[" condition "]" ";"? "then" exp "fi"
-        | "if" "[" condition "]" ";"? "then" exp "else" exp "fi"
 
     //Definicion de combinacion de variables y cadenas
     ?combination: string
@@ -30,7 +29,7 @@ grammarBash =  """
         | "$((" arithmeticoperation "))"
 
     //Definir operacion logica
-    ?logicoperation: arithmeticoperationatom "" arithmeticoperationatom
+    ?logicoperation: arithmeticoperationatom "-ge" arithmeticoperationatom
         //lesserequal
         | arithmeticoperationatom "-le" arithmeticoperationatom 
         //Greater
@@ -69,9 +68,6 @@ grammarBash =  """
 
     //Ignorar comentarios
     %ignore /[\#].+/
-
     %ignore /\s+/
 
-
 """
-       
