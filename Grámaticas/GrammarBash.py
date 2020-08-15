@@ -1,4 +1,4 @@
-
+# -*- coding:utf-8 -*-
 grammarBash =  """
     //Axioma inicial
     ?start: exp+
