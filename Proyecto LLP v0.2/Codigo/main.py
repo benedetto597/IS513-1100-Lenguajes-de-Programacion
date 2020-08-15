@@ -8,7 +8,7 @@ from Core.SemanticTwo import *
 
 reader = (Reader()).read() 
 
-parser = Lark(grammarBash ,parser="lalr")
+parser = Lark(grammarRb ,parser="lalr")
 language = parser.parse
 sample = reader.text
 

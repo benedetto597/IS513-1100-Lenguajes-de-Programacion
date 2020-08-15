@@ -64,94 +64,102 @@ grammarFun = """
 """
 
 
-grammarBash1 =  """
-    //Axioma inicial
-    ?start: "#!/bin/bash" exp+
-    //definicion de una expresion
-    ?exp: var "=" aritmeticoperationatom ";"?
-        | var "=" "$" aritmeticoperationatom ";"?
-        | var "=" string ";"?
-        | "echo" "\"" var "\"" ";"?
-        | "echo"  var 
-        | "echo" "\"" combinate "\"" ";"?
-        | "echo" "\"" string+ "\"" ";"?
-        | "echo" string* ";"?
-        | "echo" "\"" arithmeticoperation* "\"" ";"?
- 
-    ?if: "if" "[[" condition "]]" ";"? "then" content "else" content "fi"
-        | "if" "[[" condition "]]" ";"? "then" content "fi"
-        | "if" "[[" condition "]]" ";"? "then" content "else" content "fi"
-        | "if" "[[" condition "]]" ";"? "then" content elif "else" content "fi"
+grammarRb = """
+        //El axioma inicial
+        ?start: exp+
+
+        //definicion de una expresion
+        ?exp: argument+
+
+        ?argument: expre
+            | sentence
+
+        ?expre: "def" var parameter argument+ "end" 
+            | "def" var "(" parameter ")" argument+ "end"        
+            | var "=" arithmeticoperation
+            | var "="  string 
+            | "(" arithmeticoperation ")" 	
+            | "puts" "(" toprint* ")"
+            | "puts" toprint 
+            | "return" function 
+            | /return?/ var arithmeticoperation 
+            | arithmeticoperation "(" arithmeticoperation ")"
+            | var "(" arithmeticoperation ")"
+            | endfunction
+            | "/comment" comment* "uncomment/"
     
-    ?logicoperation: arithmeticoperationatom "" arithmeticoperationatom
-        //lesserequal
-        | arithmeticoperationatom "-le" arithmeticoperationatom 
-        //Greater
-        | arithmeticoperationatom "-gt" arithmeticoperationatom 
-        //Lesser
-        | arithmeticoperationatom "-lt" arithmeticoperationatom 
+        ?comment: /./
+        
+        ?toprint: string
+            | arithmeticoperation
+            | var "(" arithmeticoperation ")"
+           
+        //Definir sentencia
+        ?sentence: "if" boolean
+            | "if" (comparisonoperation | logicoperation) argument+ "end"
+            | "if" (comparisonoperation | logicoperation) argument+ else "end" 
+            | "while" (boolean | comparisonoperation | logicoperation) argument+ "end"
+            | "for" var "in" arithhmeticoperationatom ".." arithhmeticoperationatom "do" argument+ "end" 	
+        
+        ?else: "else" argument+ "end"
+
+        //Definir operación fin de instrucción 
+        ?endfunction:  "return" arithmeticoperation
+            | "return" string
+            | "return" boolean
+            | "return" var "(" parameter* ")"
+
+        ?function: var "*" var "(" arithmeticoperation ")"
+            | var "+" var "(" arithmeticoperation ")"
+            | var "/" var "(" arithmeticoperation ")"
+            | var "-" var "(" arithmeticoperation ")"
+        //Definir operación lógica
+        //a+b==b+a
+        ?logicoperation: arithhmeticoperationatom logicoperator arithmeticoperation
+            | arithmeticoperation logicoperator arithhmeticoperationatom
           
         //Definir comparación 
-    ?comparisonoperation: arithmeticoperationatom "-eq" arithmeticoperation 
-        | arithmeticoperation "-eq" arithmeticoperationatom
-        | arithmeticoperation "-ne" arithmeticoperationatom 
-        | arithmeticoperationatom "-ne" arithmeticoperation 
+        ?comparisonoperation: arithhmeticoperationatom comparisonoperator arithmeticoperation
+            | arithmeticoperation comparisonoperator arithhmeticoperationatom
 
-    ?elif: "elif" content  
-        | elif "elif" content 
-    
-    ?condition: conditionnum
-        | conditionstr
+        //definicion de la operacion aritmetica 
+        ?arithmeticoperation: product
+            | arithmeticoperation "+" product
+            | arithmeticoperation "-" product
+        //definicion de un atomo de operacion aritmetica
+        ?product: arithhmeticoperationatom 
+           | product "*" arithhmeticoperationatom
+           | product "/" arithhmeticoperationatom 
 
-    ?conditionnum:  arithmeticoperation
+        ?arithhmeticoperationatom: var
+            | number
+            | "-" arithhmeticoperationatom
 
-    ?conditionstr: string
-
-    ?content: exp+
-
-    ?combinate: string* var*
-        | var* string
-
-    ?boolean: "true" 
-        |"false"
-
-    ?exp2: if
-        | "."
-    //definicion de una variable
-    ?var:  /[a-zA-Z]\w*/
-        | "$" var
+        //Definición de operador logico
+        ?logicoperator:  />=|<=|>|</
  
-    //Definicion de una cadena
-    ?string: /"[^"]*"/
-        |  /̈́'[^']*'/
-        | /[a-zA-Z][\w]+/
-        | string " " string  
+        ?comparisonoperator: /(==)|(!=)/
+        //Definicion de booleano
+        ?boolean: "true"
+            | "false"
 
-    //Definicion de un numero
-    ?number: /\d+(\.\d+)?/
-    //Definicion de operacion aritmetica
-    ?arithmeticoperation: product
-        //| cadenaoperation "$" cadenaoperationatom 
-        | arithmeticoperation "+" product 
-        | arithmeticoperation "-" product 
-    //definicion de un atomo de operacion aritmetica
-    ?product: arithmeticoperationatom
-        | product "*" arithmeticoperationatom
-        | product "/" arithmeticoperationatom   
+        //deficion de una cadena
+        ?parameter: arithhmeticoperationatom
+            | parameter "," arithhmeticoperationatom 
+
+        ?string: /[\"].+[\"]/
+            | /[\'].+[\']/
+
+        //deficion de una variable
+        ?var: /[a-z][A-Za-z0-9_]*/
+
+        //deficion de un numero
+        ?number: /\d+(\.\d+)?/
+
+        //ignore
+        %ignore /\s+/
+        %ignore /[\#].+/
         
-    ?arithmeticoperationatom: var
-        | number
-        | "-" arithmeticoperationatom
-        | "((" arithmeticoperation "))"
-        
-    ?concatenar: string 
-        | concatenar "+" string 
-        | concatenar "+" arithmeticoperationatom 
-        | arithmeticoperationatom "+" concatenar 
-    //Ignorar espacios,saltos de linea y tabulados
-    %ignore /\s+/
-    //Ignorar comentarios
-    %ignore /\#\.+/
 """
 
 grammarBash =  """

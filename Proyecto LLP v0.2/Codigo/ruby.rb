@@ -11,8 +11,6 @@
 
 
 uncomment/
-
-
 # Pruebe para que encuentre la solución en sus propias prácticas.
 
 def factorial n
@@ -23,14 +21,26 @@ def factorial n
 
     end
 
+    puts "Hello World"
     n*factorial(n-1)
+    puts 'Enter your name:'
 
 end
 
 
+name = "gets"
+puts ("El factorial en Ruby para" n "es:" factorial(n) )
+
 n = 5
 
-puts ("El factorial en Ruby para '%d' es: %d" % [n,factorial(n)])
+def fact(n)
+    if n == 0
+      1
+    else
+      n * fact(n-1)
+    end
+  end
+
 
 
 
