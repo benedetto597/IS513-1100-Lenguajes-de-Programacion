@@ -26,6 +26,7 @@ grammarJS = """
             | /return?/ var "(" arithmeticoperation ")" ";" -> assignfunction 
             | arithmeticoperation "(" arithmeticoperation ")" ";" -> assignrecursion
             | endfunction ";"
+            
         ?fun: var "(" paremeter? ")" -> assignfunction
         
         ?arg: "{" argument+ "}" -> getvalue

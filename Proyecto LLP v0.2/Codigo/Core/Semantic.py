@@ -23,7 +23,7 @@ class Semantic(Transformer):
         if isinstance(param,list):
             pass
         else:
-            
+            pass
 
 
     """

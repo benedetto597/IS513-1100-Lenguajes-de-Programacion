@@ -6,30 +6,51 @@ grammarFun = """
 
         ?start: exp+
         
-        ?exp: "function" var "(" (var ","?)* ")" "{" argument* "}" 
-            | var "("((var|number) ","?)* ")" ";"? 
-            | "console" "." "log" "(" string "," exp ")" ";"   
-            //| inicoment cualquieronda finalcoment  
+        ?exp: "function" var "(" (var ","?)* ")" "{" argument* "}" -> addfunction
+            | var "("((var|number) ","?)* ")" ";"? -> showfunction
+            | var "(" var operator number ")" ";"? -> getrecursive
+            | "console" "." "log" "(" string "," exp ")" ";"   -> getcon
             
-            
-        ?argument: var "=" (number|string|var) ";"    
-            | "return" (number) ";" 
-            | "return" (var) ";" 
-            | "return" (string) ";"
-            | "console" "." "error" "(" (var|number|string) ")" ";" 
-            | "return" var operator var "(" var operator number ")" ";"   
-            | "console" "." "log" "(" (number|string) ")" ";"   
-            | "console" "." "log" "(" var ")" ";"   
-            | "if" "(" var operation number ")" var number ";"  
-            //| "if" "(" var operation number ")" var number ";"  
-            | inicoment content* finalcoment 
-            | inicoment content* 
+            //| inicoment cualquieronda finalcoment  -> coment                        
+        ?argument: var "=" (number|string|var) ";"   ->assingvar 
+            //| "for" "(" var "=" number ";" var operation (number|var)  ";"  var increment")""{" argument* "}" ->
+            | "return" (number) ";"? -> getreturn 
+            | "return" (var) ";"? -> getreturntwo
+            | "return" (string) ";"? -> getreturnthre
+            | "return" reserve ";"? -> getreturnreser
+            | "return" var operator exp ";"?   -> getreturnfunction
+            | "console" "." "error" "(" (var|number|string) ")" ";" -> getconsoleerror
+            | "console" "." "log" "(" (number|string) ")" ";"   -> getconsole
+            | "console" "." "log" "(" var ")" ";"   -> getconsolevar
+            | "if" "(" var operation number ")" argument ";"? -> getif 
+            | "if" "(" (var|number) operation (number|var) ")" "{" argument "}" -> ifelse
+            | else  
+            | "while" "(" logicoperation ")" init argument* "}" -> getwhile
+            | break ";" -> getcomant
+            | inicoment content* finalcoment -> coment
+            | inicoment content* -> coment
 
-        //?showfun: var "("((var|number) ","?)* ")" 
+        ?else: "else" init argument "}"  -> getelse 
+
+        ?init: "{"
+
+        ?break : "break"
+
+        ?reserve: "true"
+            | "false"
+            | "null"
+
+        ?logicoperation: var operation var 
+        //?showfun: var "("((var|number) ","?)* ")" -> showfunction
+
+        ?arithmeticoperationatom: var 
+            | number
+            | "-" arithmeticoperationatom
+          
         //?ree:number
         ?string: /"[^"]*"/
             |  /̈́'[^']*'/
-        
+
         ?operator:/\*/
                 | /\+/
                 | /\-/
@@ -38,8 +59,14 @@ grammarFun = """
         ?operation: /\==/
                 | /\</
                 | /\>/
+                | /\>\=/
+                | /\<\=/
+                | /\!\=/
                 
-       
+        ?increment: /\+\+/
+                | /\-\-/
+
+
         ?inicoment: "/*"
                 | "//"
 
@@ -54,113 +81,15 @@ grammarFun = """
 
         ?number: /\d+(\.\d+)?/
 
-        ?var: /[a-z]\w*/
+
+        ?var: /[a-z][\w]*/
 
         %ignore /\s+/
-        
-
 
 
 """
 
 
-grammarRb = """
-        //El axioma inicial
-        ?start: exp+
-
-        //definicion de una expresion
-        ?exp: argument+
-
-        ?argument: expre
-            | sentence
-
-        ?expre: "def" var parameter argument+ "end" 
-            | "def" var "(" parameter ")" argument+ "end"        
-            | var "=" arithmeticoperation
-            | var "="  string 
-            | "(" arithmeticoperation ")" 	
-            | "puts" "(" toprint* ")"
-            | "puts" toprint 
-            | "return" function 
-            | /return?/ var arithmeticoperation 
-            | arithmeticoperation "(" arithmeticoperation ")"
-            | var "(" arithmeticoperation ")"
-            | endfunction
-            | "/comment" comment* "uncomment/"
-    
-        ?comment: /./
-        
-        ?toprint: string
-            | arithmeticoperation
-            | var "(" arithmeticoperation ")"
-           
-        //Definir sentencia
-        ?sentence: "if" boolean
-            | "if" (comparisonoperation | logicoperation) argument+ "end"
-            | "if" (comparisonoperation | logicoperation) argument+ else "end" 
-            | "while" (boolean | comparisonoperation | logicoperation) argument+ "end"
-            | "for" var "in" arithhmeticoperationatom ".." arithhmeticoperationatom "do" argument+ "end" 	
-        
-        ?else: "else" argument+ "end"
-
-        //Definir operación fin de instrucción 
-        ?endfunction:  "return" arithmeticoperation
-            | "return" string
-            | "return" boolean
-            | "return" var "(" parameter* ")"
-
-        ?function: var "*" var "(" arithmeticoperation ")"
-            | var "+" var "(" arithmeticoperation ")"
-            | var "/" var "(" arithmeticoperation ")"
-            | var "-" var "(" arithmeticoperation ")"
-        //Definir operación lógica
-        //a+b==b+a
-        ?logicoperation: arithhmeticoperationatom logicoperator arithmeticoperation
-            | arithmeticoperation logicoperator arithhmeticoperationatom
-          
-        //Definir comparación 
-        ?comparisonoperation: arithhmeticoperationatom comparisonoperator arithmeticoperation
-            | arithmeticoperation comparisonoperator arithhmeticoperationatom
-
-        //definicion de la operacion aritmetica 
-        ?arithmeticoperation: product
-            | arithmeticoperation "+" product
-            | arithmeticoperation "-" product
-        //definicion de un atomo de operacion aritmetica
-        ?product: arithhmeticoperationatom 
-           | product "*" arithhmeticoperationatom
-           | product "/" arithhmeticoperationatom 
-
-        ?arithhmeticoperationatom: var
-            | number
-            | "-" arithhmeticoperationatom
-
-        //Definición de operador logico
-        ?logicoperator:  />=|<=|>|</
- 
-        ?comparisonoperator: /(==)|(!=)/
-        //Definicion de booleano
-        ?boolean: "true"
-            | "false"
-
-        //deficion de una cadena
-        ?parameter: arithhmeticoperationatom
-            | parameter "," arithhmeticoperationatom 
-
-        ?string: /[\"].+[\"]/
-            | /[\'].+[\']/
-
-        //deficion de una variable
-        ?var: /[a-z][A-Za-z0-9_]*/
-
-        //deficion de un numero
-        ?number: /\d+(\.\d+)?/
-
-        //ignore
-        %ignore /\s+/
-        %ignore /[\#].+/
-        
-"""
 
 grammarBash =  """
     //Axioma inicial
@@ -266,4 +195,104 @@ grammarBash =  """
     %ignore /\s+/
 
 """
+
+
+
+grammarRb = """
+        //El axioma inicial
+        ?start: exp+
+
+        //definicion de una expresion
+        ?exp: argument+
+
+        ?argument: expre
+            | sentence
+
+        ?expre: "def" var parameter argument+ "end" 
+            | "/comment" comment* "uncomment/"
+            | var "=" arithmeticoperation
+            | var "="  string 
+            | var "(" arithmeticoperation ")"
+            | "def" var "(" parameter ")" argument+ "end"        
+            | function
+            | "(" arithmeticoperation ")" 	
+            | "puts" "(" toprint* ")"
+            | "puts" toprint 
+            | "return" function 
+            | /return?/ var arithmeticoperation 
+            | arithmeticoperation "(" arithmeticoperation ")"
+            | endfunction
+    
+        //Definir sentencia
+        ?sentence: "if" boolean
+            | "if" (comparisonoperation | logicoperation) argument+ "end" else?
+            | "while" (boolean | comparisonoperation | logicoperation) argument+ "end"
+            | "for" var "in" arithhmeticoperationatom ".." arithhmeticoperationatom "do" argument+ "end" 	
+        
+        ?else: "else" argument+ "end"
+
+        //Definir operación fin de instrucción 
+        ?endfunction:  "return" arithmeticoperation
+            | "return" string
+            | "return" boolean
+            | "return" var "(" parameter* ")"
+
+        ?function: var "*" var "(" arithmeticoperation ")"
+            | var "+" var "(" arithmeticoperation ")"
+            | var "/" var "(" arithmeticoperation ")"
+            | var "-" var "(" arithmeticoperation ")"
+        //Definir operación lógica
+        //a+b==b+a
+        ?logicoperation: arithhmeticoperationatom logicoperator arithmeticoperation
+            | arithmeticoperation logicoperator arithhmeticoperationatom
+          
+        //Definir comparación 
+        ?comparisonoperation: arithhmeticoperationatom comparisonoperator arithmeticoperation
+            | arithmeticoperation comparisonoperator arithhmeticoperationatom
+
+        //definicion de la operacion aritmetica 
+        ?arithmeticoperation: product
+            | arithmeticoperation "+" product
+            | arithmeticoperation "-" product
+        //definicion de un atomo de operacion aritmetica
+        ?product: arithhmeticoperationatom 
+           | product "*" arithhmeticoperationatom
+           | product "/" arithhmeticoperationatom 
+
+        ?arithhmeticoperationatom: var
+            | number
+            | "-" arithhmeticoperationatom
+
+        //Definición de operador logico
+        ?logicoperator:  />=|<=|>|</
+ 
+        ?comparisonoperator: /(==)|(!=)/
+
+        //Definicion de booleano
+        ?boolean: "true"
+            | "false"
+
+        //deficion de una cadena
+        ?parameter: arithhmeticoperationatom
+            | parameter "," arithhmeticoperationatom 
        
+        ?comment: /./
+       
+        ?toprint: string
+            | arithmeticoperation
+            | var "(" arithmeticoperation ")"
+
+        ?string: /[\"].+[\"]/
+            | /[\'].+[\']/
+
+        //deficion de una variable
+        ?var: /[a-z][A-Za-z0-9_]*/
+
+        //deficion de un numero
+        ?number: /\d+(\.\d+)?/
+
+        //ignore
+        %ignore /\s+/
+        %ignore /[\#].+/
+        
+"""

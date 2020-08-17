@@ -35,25 +35,9 @@ n = 5
 
 def fact(n)
     if n == 0
-      1
+      n = 4
+    end
     else
       n * fact(n-1)
     end
-  end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+end

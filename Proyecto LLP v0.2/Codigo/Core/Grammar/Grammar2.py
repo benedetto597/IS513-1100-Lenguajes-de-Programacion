@@ -115,38 +115,38 @@ grammarRb = """
         ?argument: expre
             | sentence
 
-        ?expre: "def" var parameter argument+ "end"        
-            | var "=" arithmeticoperation
-            | var "="  string 
-            | var "=" string 
+        ?expre: "def" var parameter argument+ "end" -> assignfunc        
+            | var "=" arithmeticoperation -> assignvar
+            | var "="  string  -> assignvar
+            | var "=" string  -> assignvar
             //| var "=" arithhmeticoperationatom "+" arithhmeticoperationatom
             //| var "=" arithhmeticoperationatom "-" arithhmeticoperationatom
 
-            | "puts" (string? | arithmeticoperation?)
-            | "return" function 
-            | /return?/ var arithmeticoperatio 
-            | arithmeticoperation "(" arithmeticoperation ")"
+            | "puts" (string? | arithmeticoperation?) -> printvar
+            | "return" function  -> getfunction
+            | /return?/ var arithmeticoperation-> assignrecursion 
+            | arithmeticoperation "(" arithmeticoperation ")" -> assignrecursion
             | endfunction
 
         //Definir sentencia
-        ?sentence: "if" boolean
-            | "if" (comparisonoperation | logicoperation) argument+
-            | "if" (comparisonoperation | logicoperation) argument+ "end" else?
-            | "while" (boolean | comparisonoperation | logicoperation) argument+ "end"
-            | "for" var "in" arithhmeticoperationatom ".." arithhmeticoperationatom "do" argument+ "end" 		
+        ?sentence: "if" boolean -> assignif
+            | "if" (comparisonoperation | logicoperation) argument+ -> assignif
+            | "if" (comparisonoperation | logicoperation) argument+ "end" else? -> assignif
+            | "while" (boolean | comparisonoperation | logicoperation) argument+ "end" -> assignwhile
+            | "for" var "in" arithhmeticoperationatom ".." arithhmeticoperationatom "do" argument+ "end"  -> assignfor		
         
-        ?else: "else" argument+ "end"
+        ?else: "else" argument+ "end" -> assignelse
 
         //Definir operación fin de instrucción 
-        ?endfunction:  "return" arithmeticoperation
-            | "return" string
-            | "return" boolean
+        ?endfunction:  "return" arithmeticoperation -> assignend
+            | "return" string -> assignend
+            | "return" boolean -> assignend
             | "return" var "(" parameter* ")"
 
-        ?function: var "*" var "(" arithmeticoperation ")"
-            | var "+" var "(" arithmeticoperation ")"
-            | var "/" var "(" arithmeticoperation ")"
-            | var "-" var "(" arithmeticoperation ")"
+        ?function: var "*" var "(" arithmeticoperation ")" ->multfunction
+            | var "+" var "(" arithmeticoperation ")" ->sumfunction
+            | var "/" var "(" arithmeticoperation ")" ->divfunction
+            | var "-" var "(" arithmeticoperation ")" ->subfunction
         //Definir operación lógica
         //a+b==b+a
         ?logicoperation: arithhmeticoperationatom logicoperator arithmeticoperation
@@ -158,14 +158,14 @@ grammarRb = """
 
         //definicion de la operacion aritmetica 
         ?arithmeticoperation: product
-            | arithmeticoperation "+" product
-            | arithmeticoperation "-" product
+            | arithmeticoperation "+" product -> sum
+            | arithmeticoperation "-" product -> sub
         //definicion de un atomo de operacion aritmetica
         ?product: arithhmeticoperationatom 
-           | product "*" arithhmeticoperationatom
-           | product "/" arithhmeticoperationatom 
+           | product "*" arithhmeticoperationatom -> mul
+           | product "/" arithhmeticoperationatom -> div 
 
-        ?arithhmeticoperationatom: var
+        ?arithhmeticoperationatom: var -> getvar
             | number
             | "-" arithhmeticoperationatom
             | "(" arithmeticoperation ")"        
@@ -179,7 +179,7 @@ grammarRb = """
             | "false"
 
         //deficion de una cadena
-        ?parameter: arithhmeticoperationatom
+        ?parameter: arithhmeticoperationatom ->  assignparameter
             | parameter "," arithhmeticoperationatom 
 
         ?string: /"[^"]*"/
@@ -192,13 +192,14 @@ grammarRb = """
         ?number: /\d+(\.\d+)?/
 
         ?concatenate: string 
-            | concatenate "+" string 
-            | concatenate "+" arithhmeticoperationatom 
-            | arithhmeticoperationatom "+" concatenate 
+            | concatenate "+" string -> con
+            | concatenate "+" arithhmeticoperationatom -> con
+            | arithhmeticoperationatom "+" concatenate -> con
         
         //ignore
         %ignore /\s+/
-        %ignore /\#\.+/
+        %ignore /#.*/
+        %ignore //
         
 """
 
