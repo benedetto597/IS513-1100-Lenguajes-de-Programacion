@@ -53,13 +53,45 @@ class Automata:
             i,token = self.tokenCreator(text,i,token)
             
             if token.formed:
-                v,k = token.info()  
-                tokens += [[v,k]]
+                v,k = token.info()                 
+                if(token.type == "Comment" or token.type ==  "Simple Comment" ):
+                    #Comentarios ignorados
+                    pass
+                else: 
+                    if(token.type == "Double String"):
+                        #Lexemas y tokens
+                        initString, type1 = v[0], "Start Double string"
+                        string, type2 = v[1:-1], "String"
+                        endString, type3 = v[-1] , "End Double string"
+                        tokens += [[initString,type1]]
+                        tokens += [[string,type2]]
+                        tokens += [[endString,type3]]
+                       
+
+                    elif(token.type == "Simple String"):
+                        #Lexemas y tokens
+                        initString, type1 = v[0], "Start Simple string"
+                        string, type2 = v[1:-1], "String"
+                        endString, type3 = v[-1] , "End Simple string"
+                        tokens += [[initString,type1]]
+                        tokens += [[string,type2]]
+                        tokens += [[endString,type3]]
+
+                    elif(token.type == "Length"):
+                        #Lexema y token
+                        lexem = v.split('.')
+                        userIdentifier, type1 = lexem[0], "User Identifier"
+                        lengthWord, type2 = lexem[1], "Reserved word"
+                        tokens += [[userIdentifier,type1]]
+                        tokens += [[lengthWord,type2]]
+
+                    else:
+                        tokens += [[v,k]]
             if token.op:
                 i = i-1
         #caso especial, para el ultimo caracter(final del tamanno del archivo.), agg token.
         if (i == len(text) and not token.formed):
-            v,k = token.info()  
+            v,k = token.info() 
             tokens += [[v,k]]
        
             
@@ -138,16 +170,14 @@ class Automata:
                 token.add(char)
                 token.type = "Simple Comment"
             
-            elif (token.type == "Simple Comment" and self.is_lineBreak(char)):
+            elif (token.type == "Simple Comment" and self.is_commentBreak(char)):
                 token.formed = True    
-            elif token.type == "Simple Comment":
-                token.add(char)
 
             elif(self.is_asterisk(token.atLast()) and self.is_slash(char) and token.type == "Comment"):
                 token.add(char)
                 token.formed = True    
             
-            elif token.type == "Comment":
+            elif token.type == "Comment" or token.type == "Simple Comment":
                 token.add(char)          
 
             #------------------------------------------------------------------
@@ -306,7 +336,7 @@ class Automata:
                     #print((current[pointPosition+1:],v))
                     if v:   
                         token.formed = True
-                        token.type = k
+                        token.type = "Length"
                         token.op = True 
                     else:
                         quit("\x1b[;31m"+"Error: Identificador de usuario no válido, en la línea ,%d en la posición %d, lexema: %s" %(self.count, pos , current))
@@ -332,6 +362,11 @@ class Automata:
         if(
             char ==34
         ): return True
+        return False
+
+    def is_commentBreak(self,char):
+        if(char == 10):
+            return True
         return False
 
     def is_lineBreak(self,char):

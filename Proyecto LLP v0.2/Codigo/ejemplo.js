@@ -1,12 +1,17 @@
-
+//Este es un comentario
+/* este es un comentario de multiples 
+lineas*/
+var = "Esta es una cadena";
+var = 'Esta es una cadena';
+a = var.length();
 function factorial(n){
-
+    
     if(n==1) return 1;
-
+    
     if(n<1) return 0;
-
+    
     return n*factorial(n-1);
-
+    
 }
 
 

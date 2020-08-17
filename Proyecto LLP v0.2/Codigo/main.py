@@ -36,7 +36,8 @@ class Recognition:
                 language(sample)
 
             except Exception as e:
-                quit("\x1b[;31m"+"\nError inesperado: \n %s"%e) 
+                pass
+                #quit("\x1b[;31m"+"\nError inesperado: \n %s"%e) 
         else:
             temp = [grammarRb,grammarBash]
             
