@@ -177,7 +177,7 @@ class Semantic(Transformer):
         #print(self.functions)
 
         var = self.tempSentence[name]
-        print(var)
+        
         self.countIf = 1
         a,b = self.run(var,params,name)
         if a:

@@ -23,7 +23,7 @@ function isInStock(n){
         console.log("Bye!");
         break;
     }
-    if(n<2) console.error("lo iso");
+    if(n<2) console.log("lo iso");
     while(n == 1){
         console.error("error");
         console.error("total");

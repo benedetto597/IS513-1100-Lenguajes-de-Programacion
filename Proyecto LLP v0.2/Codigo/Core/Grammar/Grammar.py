@@ -2,45 +2,55 @@
 
 import re 
 
-grammarFun = """
+grammarJS = """
 
         ?start: exp+
         
-        ?exp: "function" var "(" (var ","?)* ")" "{" argument* "}" -> addfunction
+        ?exp: "function" var "(" (var ","?)* ")" "{" sentence* "}" -> addfunction
             | var "("((var|number) ","?)* ")" ";"? -> showfunction
             | var "(" var operator number ")" ";"? -> getrecursive
             | "console" "." "log" "(" string "," exp ")" ";"   -> getcon
+            | "for" "(" var "=" number ";" var operation (number|var)  ";"  var increment ")" "{" sentence* "}" -> getfor
             
             //| inicoment cualquieronda finalcoment  -> coment                        
-        ?argument: var "=" (number|string|var) ";"   ->assingvar 
-            //| "for" "(" var "=" number ";" var operation (number|var)  ";"  var increment")""{" argument* "}" ->
+        ?sentence: assign ";"?  
+            | "for" "(" var "=" number ";" logicoperation  ";"  var increment ")" "{" sentence* "}" -> getfor
             | "return" (number) ";"? -> getreturn 
             | "return" (var) ";"? -> getreturntwo
             | "return" (string) ";"? -> getreturnthre
-            | "return" reserve ";"? -> getreturnreser
+            //| "return" reserve ";"? -> getreserve
+            //| var "=" reserve|string|number ";" -> getvar 
             | "return" var operator exp ";"?   -> getreturnfunction
             | "console" "." "error" "(" (var|number|string) ")" ";" -> getconsoleerror
             | "console" "." "log" "(" (number|string) ")" ";"   -> getconsole
             | "console" "." "log" "(" var ")" ";"   -> getconsolevar
-            | "if" "(" var operation number ")" argument ";"? -> getif 
-            | "if" "(" (var|number) operation (number|var) ")" "{" argument "}" -> ifelse
+            | "if" "(" var operation number ")" sentence ";"? -> getif 
+            | "if" "(" (var|number) operation (number|var) ")" "{" sentence "}" -> ifelse
             | else  
-            | "while" "(" logicoperation ")" init argument* "}" -> getwhile
+            | "while" "(" logicoperation ")" init sentence* "}" -> getwhile
             | break ";" -> getcomant
-            | inicoment content* finalcoment -> coment
-            | inicoment content* -> coment
+            | "/*" content* "*/" -> coment
+            //e| inicoment content*  -> coment
+            //| "for" "(" var "=" arithmeticoperationatom ";" logicoperation ";" var iteration ")" "{" sentence "}" -> getfor
 
-        ?else: "else" init argument "}"  -> getelse 
+        ?else: "else" init sentence "}"  -> getelse 
+
+        ?iteration: /[\+\+]/
+            | /[\-\-]/
 
         ?init: "{"
+            | ";"
 
-        ?break : "break"
+        ?break: "break"
 
-        ?reserve: "true"
-            | "false"
-            | "null"
+        ?increment: /\+\+/
+            | /\-\-/
+        ?assign: var "=" var -> savevar
+            | var "=" string  
+            | var "=" number
+        
 
-        ?logicoperation: var operation var 
+        ?logicoperation: arithmeticoperationatom operation arithmeticoperationatom  
         //?showfun: var "("((var|number) ","?)* ")" -> showfunction
 
         ?arithmeticoperationatom: var 
@@ -63,20 +73,8 @@ grammarFun = """
                 | /\<\=/
                 | /\!\=/
                 
-        ?increment: /\+\+/
-                | /\-\-/
 
-
-        ?inicoment: "/*"
-                | "//"
-
-        ?finalcoment: "*/"
-
-        ?content: /[a-z]\w*/
-                | /.+/
-                | /\d+(\.\d+)?/
-                | /̈́'[^']*'/
-                | /"[^"]*"/
+        ?content: /./
                 
 
         ?number: /\d+(\.\d+)?/
@@ -86,8 +84,10 @@ grammarFun = """
 
         %ignore /\s+/
 
+        %ignore /[\/\/].*/
 
 """
+
 
 
 

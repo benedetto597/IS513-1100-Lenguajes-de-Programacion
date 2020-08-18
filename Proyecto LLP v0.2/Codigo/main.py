@@ -23,7 +23,7 @@ class Recognition:
         if (whatLanguage == 1):
             automata = (Automata(reader)).run()
 
-            parser = Lark(grammarFun ,parser="lalr",transformer = Semantic())
+            parser = Lark(grammarJS ,parser="lalr",transformer = Semantic())
             language = parser.parse
 
             sample = automata.text 

@@ -17,12 +17,12 @@ class Semantic(Transformer):
     def __init__(self): 
         self.variables = {}
         self.functions = {} # {"nombre de la funcion": [a,b,c,d]}
-        self.temp = {}
-        self.temp2 = {}
+        self.tempSentence = {}
+        self.tempSentence2 = {}
         self.arguments = {} # {"nombre de la funcion":{"return": [a], "console.log":""},
         self.countIf = 1
         self.logicOp = []
-        self.start = False
+        self.startUp = False
                                         
     def printFun(self, param):
         #param = (str(param[0])).strip("\"")
@@ -31,6 +31,15 @@ class Semantic(Transformer):
     def assingvar(self,name,value): 
         self.variables[name] = value
         #print("%s \n %s" %(name,value))
+    
+    def getreserve(self):
+        pass
+
+    def getother(self):
+        pass
+    
+    def savevar(self,name,value):
+        self.arguments["assign"] = [str(name),str(value)]
         
     def getvar(self,name):
         return self.variables[name]
@@ -53,7 +62,7 @@ class Semantic(Transformer):
         var = self.arguments
         self.arguments = {}
        
-        self.temp[array[0]] = var
+        self.tempSentence[array[0]] = var
         self.functions[array[0]] = array[1:]
         self.cleanParams(array[1:])
         
@@ -64,8 +73,8 @@ class Semantic(Transformer):
         cont = cont.split(",")
  
         params = cont[1:]
-        self.temp2[cont[0]] = params
-        #print(self.temp2)
+        self.tempSentence2[cont[0]] = params
+        #print(self.tempSentence2)
 
 
     @v_args(inline=False) #<nombre>(argumento);
@@ -167,7 +176,7 @@ class Semantic(Transformer):
     def runFunction(self,name,params):
         #print(self.functions)
 
-        var = self.temp[name]
+        var = self.tempSentence[name]
         print(var)
         self.countIf = 1
         a,b = self.run(var,params,name)
@@ -177,10 +186,14 @@ class Semantic(Transformer):
 
         #print("\n\n")
 
-    def logicalOperator(self,array,name,params):
-        array[-1]
+    def logicalOperator(self,array,name,params,num = None):
+        #array[-1]
         exc = array[2]
-        pos = self.posicionTree(name,array[0],params)
+        if num == None:
+            pos = self.posicionTree(name,array[0],params)
+        else:
+            pos = float(num)
+
         if re.match(r"[a-z]\w*",array[2]):
             exc = self.posicionTree(name,array[2],params)
         #print((float(array[2]),pos))
@@ -234,7 +247,7 @@ class Semantic(Transformer):
                 if arr[0] in var:
                     temp = j
                     value = self.posicionTree(name,temp[0],params)
-                    #print(value)
+                    print(value)
                 else:
                     self.printConsoleLog(j)
 
@@ -263,7 +276,31 @@ class Semantic(Transformer):
                             return (True,b)
 
 
-                        
+            elif (i.find("for") >= 0):
+                json = j[-1]
+                array = j[-2]
+                num = int(j[0])
+                op = self.logicalOperator(array,name,params,num)
+                current = True
+                if op:
+                    a,b = self.run(json,params,name)
+                    if a:
+                        return (True,b)
+                    if b == "break":
+                        current = False
+                if current and op:
+                    if j[1] == "++":
+                        num += 1
+                    elif j[1] == "--":
+                        num -= 1
+                    jsonFor = {}
+                    jsonFor["for"] = [num,j[1],array,json]
+                    a,b = self.run(jsonFor,params,name)
+                    if a:
+                        return (True,b)
+
+                
+
                         
             elif (i.find("ifelse") >= 0):
                 jsonIf = j[-2]
@@ -296,15 +333,15 @@ class Semantic(Transformer):
     def getreturn(self,param):
         va = str(param)
         
-        self.temp2["return"] = va
-        #print(self.temp2)
+        self.tempSentence2["return"] = va
+        #print(self.tempSentence2)
         #self.arguments["return"]= [(va)]
         
 
     def getreturntwo(self,param):
         va = str(param)
         
-        self.temp2["returntwo"] = va
+        self.tempSentence2["returntwo"] = va
        # self.arguments["returntwo"]= [va]
         
         #print(self.arguments)
@@ -312,7 +349,7 @@ class Semantic(Transformer):
     def getreturnthre(self,param):
         va = str(param)
         
-        self.temp2["returntree"] = va
+        self.tempSentence2["returntree"] = va
         #self.arguments["returntree"]= [va]
         #print(self.arguments)
 
@@ -321,9 +358,9 @@ class Semantic(Transformer):
         #["n","*",{"factorial":["n","-","1"]}]
         arg = self.cleanTree(param)
         arg = arg.split(",")
-        #print((arg,self.temp2))       
-        arg.append(self.temp2)
-        self.temp2 = {}
+        #print((arg,self.tempSentence2))       
+        arg.append(self.tempSentence2)
+        self.tempSentence2 = {}
         self.arguments["recursive"] = arg
 
         #self.arguments["returnFunction"] = arg.split(",")
@@ -334,22 +371,22 @@ class Semantic(Transformer):
     def ifelse(self,param):
         var = (self.cleanTree(param)).split(",")
 
-        json = self.temp2
-        #a = list(self.temp2.keys())
+        json = self.tempSentence2
+        #a = list(self.tempSentence2.keys())
         var.append(json)
-        self.temp2 = {}
-        self.start = True
+        self.tempSentence2 = {}
+        self.startUp = True
         self.arguments["ifelse"] = var
     
    
     @v_args(inline=False)    
     def getelse(self,param):
         #var = (self.cleanTree(param)).split(",")
-        json = self.temp2
-        if self.start:
+        json = self.tempSentence2
+        if self.startUp:
             array = self.arguments["ifelse"]
             array.append(json)
-            self.temp2 = {}
+            self.tempSentence2 = {}
             self.arguments["ifelse"] = array
 
 
@@ -357,12 +394,12 @@ class Semantic(Transformer):
     def getconsole(self,param):
         #pendiente caso numeros.
         var = str(param)
-        if "consoleLog" in self.temp2:
+        if "consoleLog" in self.tempSentence2:
             self.countIf += 1
             name = "consoleLog%s"%self.countIf
-            self.temp2[name] = var
+            self.tempSentence2[name] = var
         else:
-            self.temp2["consoleLog"] = var
+            self.tempSentence2["consoleLog"] = var
         #self.arguments["consoleLog"] = [var]
 
     @v_args(inline=False)    
@@ -371,18 +408,19 @@ class Semantic(Transformer):
         var = (self.cleanTree(param)).split(",")
         #print(var,"///")
 
-        a = list(self.temp2.keys())
+        a = list(self.tempSentence2.keys())
         if "if" in self.arguments:
             self.countIf += 1
             name = "if%s"%self.countIf  
             if not(a == []):
-                var.append(self.temp2)
-                self.temp2 = {}
+                var.append(self.tempSentence2)
+                self.tempSentence2 = {}
                 self.arguments[name] = var  
         elif not(a == []):
-            var.append(self.temp2)
-            self.temp2 = {}
+            var.append(self.tempSentence2)
+            self.tempSentence2 = {}
             self.arguments["if"] = var
+
 
 
 
@@ -390,22 +428,33 @@ class Semantic(Transformer):
     def getconsolevar(self,param): #z
         #tomar en cuenta sobreescritura de metodos.
         var = str(param)
+        if "consoleLogVar" in self.tempSentence2:
+            self.countIf += 1
+            name = "consoleLogVar%s"%self.countIf
+            self.tempSentence2[name] = var
+        else:
+            self.tempSentence2["consoleLogVar"] = var
         #print(self.getvar(var))
-        if var in self.variables:
-            var = str(self.getvar(var))
-            self.temp2["consoleLogVar"] = var
-        else:  
-            self.temp2["consoleLogVar"] = var
+        #if var in self.tempSentence2:
+        #    #var = str(self.getvar(var))
+        #    self.tempSentence2["consoleLogVar"] = var
+        #else:  
+        #    self.tempSentence2["consoleLogVar"] = var
         
 
     def getconsoleerror(self,param):
         var = str(param)
         #if self.getvar(var):
         #    var = str(self.getvar(var))
-        #    self.temp2["consoleError"] = [var]
+        #    self.tempSentence2["consoleError"] = [var]
         #else:
         #print("////",var)  
-        self.temp2["consoleError"] = var
+        if "consoleError" in self.tempSentence2:
+            self.countIf += 1
+            name = "consoleError%s"%self.countIf
+            self.tempSentence2[name] = var
+        else:
+            self.tempSentence2["consoleError"] = var
     #================================================================================
        
     @v_args(inline=False)    
@@ -419,26 +468,66 @@ class Semantic(Transformer):
     @v_args(inline=False)    
     def getwhile(self,param):
 
-        #var.append(self.temp2)
+        #var.append(self.tempSentence2)
         var = self.logicOp
-        var.append(self.temp2)
+        #var.append(self.tempSentence2)
         self.logicOp = []
-        self.temp2 = {}
-        self.arguments["while"] = var
+        #self.tempSentence2 = {}
+        #self.arguments["while"] = var
+
+        a = list(self.tempSentence2.keys())
+        if "while" in self.arguments:
+            self.countIf += 1
+            name = "while%s"%self.countIf  
+            if not(a == []):
+                var.append(self.tempSentence2)
+                #self.logicOp = []
+                self.tempSentence2 = {}
+                self.arguments[name] = var  
+        elif not(a == []):
+            var.append(self.tempSentence2)
+            #self.logicOp = []
+            self.tempSentence2 = {}
+            self.arguments["while"] = var
 
 
+    @v_args(inline=False)    
     def logicoperation(self,params):
         var = (self.cleanTree(params)).split(",")
         self.logicOp = var
 
     @v_args(inline=True)    
     def getcomant(self,param):
-        v#ar = (self.cleanTree(param)).split(",")
-        var = str(param)
-        self.temp2["break"] = var
+        self.tempSentence2["break"] = "break"
 
-   
+    @v_args(inline=False)  
+    def getfor(self,param):
+        var = (self.cleanTree(param)).split(",")
+        op = self.logicOp
+        if ((var[0] in op) and (var[0] == var[2])):
+            array = [var[1],var[3]]
+            array.append(op)
+            self.logicOp = []
+
+            a = list(self.tempSentence2.keys())
+            if "for" in self.arguments:
+                self.countIf += 1
+                name = "for%s"%self.countIf  
+                if not(a == []):
+                    array.append(self.tempSentence2)
+                    #self.logicOp = []
+                    self.tempSentence2 = {}
+                    self.arguments[name] = array  
+            elif not(a == []):
+                array.append(self.tempSentence2)
+                #self.logicOp = []
+                self.tempSentence2 = {}
+                self.arguments["for"] = array
+        else:
+            print("MALO ")
+
+    @v_args(inline=False)  
+    def coment(self,param):
+        pass
 
     
-   
-  

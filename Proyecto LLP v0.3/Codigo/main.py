@@ -31,7 +31,8 @@ class Recognition:
             if (optionTable == 1):
                 print("\n\x1b[1;34m"+tabulate([["Tabla de Simbolos"]]))
                 print("\x1b[;0m"+tabulate(automata.tokens, ["Lexem","Token"], tablefmt="fancy_grid", colalign=("center","center",)))
-
+            
+            #elif(optionTable == 0):    
             try:
                 language(sample)
 
