@@ -35,8 +35,8 @@ class InformalTokenParser:
     def help(self):
 
         print("")
-        print("*"*80)
-        print("*"*80) 
+        print("*"*95)
+        print("*"*95) 
         print("\tInformal Token Reader (Analizador Léxico Informal Demostrativo) ")
         print("""
         \tPermite el reconocimiento de distintos tokes usando expresiones 
@@ -45,8 +45,8 @@ class InformalTokenParser:
         \treconocerá identificadores de usuario, valores númericos, cadenas, 
         \tfin de instrucción y saltos de línea
         """)
-        print("*"*80)
-        print("*"*80)
+        print("*"*95)
+        print("*"*95)
 
     def read(self):
         #python3 lexicalAnalysis.py sample1.lng
@@ -152,8 +152,9 @@ class InformalTokenParser:
             return "\\\\%s" % token
         return token
 
+"""
 parser = (InformalTokenParser()).read().preprocess()
-#parser.help()
+parser.help()
 
 #print("Programa encontrado:")
 lexicalAnalysis = parser.lexicalAnalysis()
@@ -162,3 +163,4 @@ if(len(lexicalAnalysis) >0):
 
 #print("El análisis léxico del software es:")
 #print(tabulate(lexicalAnalysis))
+"""

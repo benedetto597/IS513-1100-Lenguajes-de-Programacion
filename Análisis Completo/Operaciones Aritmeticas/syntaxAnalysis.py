@@ -38,8 +38,9 @@ class SyntaxAnalysis:
         print("*"*80)
         print("*"*80)
 
-    def read(self):
-        self.text = input()
+    def read(self, text):
+        #self.text = input()
+        self.text = text
         return self
 
     def parse(self):
@@ -60,8 +61,9 @@ class SyntaxAnalysis:
                     quit("Error sintáctico: Se ha encontrado un error en la línea %d" % i)
 
         return True
-
+"""
 parser = (SyntaxAnalysis()).read()
 
 if parser.parse():
     print("%s" % parser.text)
+"""
